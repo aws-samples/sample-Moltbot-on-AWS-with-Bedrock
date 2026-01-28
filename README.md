@@ -10,7 +10,7 @@ English | [简体中文](README_CN.md)
 
 ## What is This?
 
-[Moltbot](https://github.com/moltbot/moltbot) (formerly Clawdbot) is an open-source personal AI assistant that connects to WhatsApp, Slack, Discord, and more. This project provides an **AWS-native deployment** using Amazon Bedrock instead of Anthropic API keys.
+[Moltbot](https://github.com/moltbot/moltbot) (formerly Clawdbot) is an open-source personal AI assistant that connects to WhatsApp, Slack, Discord, and more. This project provides an **AWS-native deployment** using Amazon Bedrock instead of Anthropic/AWS Nova/DeepSeek API keys.
 
 ## Why AWS Native?
 
