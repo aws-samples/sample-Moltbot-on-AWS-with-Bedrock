@@ -6,7 +6,7 @@
 
 ## 这是什么？
 
-[Moltbot](https://github.com/moltbot/moltbot)（原 Clawdbot）是一个开源的个人 AI 助手，可以连接 WhatsApp、Slack、Discord 等平台。本项目提供 **AWS 原生部署方案**，使用 Amazon Bedrock 替代 Anthropic API Key。
+[Moltbot](https://github.com/moltbot/moltbot)（原 Clawdbot）是一个开源的个人 AI 助手，可以连接 WhatsApp、Slack、Discord 等平台。本项目提供 **AWS 原生部署方案**，使用 Amazon Bedrock 敏捷使用 Anthropic/AWS Nova/DeepSeek API Key。
 
 ## 为什么选择 AWS 原生版？
 
