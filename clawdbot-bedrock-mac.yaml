@@ -55,13 +55,14 @@ Parameters:
     Description: "macOS AMI ID - 'auto' uses region-specific AMI from Mappings, or specify custom AMI ID"
 
   KeyPairName:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: "EC2 key pair for emergency SSH access"
+    Type: String
+    Default: "none"
+    Description: "EC2 key pair for emergency SSH access (optional - set to 'none' to skip)"
 
   AllowedSSHCIDR:
     Type: String
-    Default: "0.0.0.0/0"
-    Description: "CIDR for SSH access (recommend SSM Session Manager, set to 127.0.0.1/32 to disable SSH)"
+    Default: ""
+    Description: "CIDR for SSH access (optional - leave empty for no inbound rules. SSM Session Manager is used for access. If SSH is needed, set to your IP/32 - find your IP at checkip.amazonaws.com)"
 
   CreateVPCEndpoints:
     Type: String
@@ -80,7 +81,10 @@ Parameters:
 
 Conditions:
   CreateEndpoints: !Equals [!Ref CreateVPCEndpoints, "true"]
-  AllowSSH: !Not [!Equals [!Ref AllowedSSHCIDR, "127.0.0.1/32"]]
+  HasKeyPair: !Not [!Equals [!Ref KeyPairName, "none"]]
+  AllowSSH: !And
+    - !Not [!Equals [!Ref AllowedSSHCIDR, ""]]
+    - !Not [!Equals [!Ref KeyPairName, "none"]]
   UseAppleSilicon: !Or
     - !Equals [!Ref MacInstanceType, "mac2.metal"]
     - !Equals [!Ref MacInstanceType, "mac2-m2.metal"]
@@ -325,11 +329,14 @@ Resources:
             CidrIp: !Ref AllowedSSHCIDR
             Description: "SSH access (fallback)"
           - !Ref AWS::NoValue
-        - IpProtocol: tcp
-          FromPort: 5900
-          ToPort: 5900
-          CidrIp: !Ref AllowedSSHCIDR
-          Description: "VNC access for Mac GUI"
+        - !If
+          - AllowSSH
+          - IpProtocol: tcp
+            FromPort: 5900
+            ToPort: 5900
+            CidrIp: !Ref AllowedSSHCIDR
+            Description: "VNC access for Mac GUI"
+          - !Ref AWS::NoValue
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: "0.0.0.0/0"
@@ -350,7 +357,7 @@ Resources:
           - !FindInMap [MacAMIMap, !Ref "AWS::Region", ARM64]
           - !FindInMap [MacAMIMap, !Ref "AWS::Region", x86]
       InstanceType: !Ref MacInstanceType
-      KeyName: !Ref KeyPairName
+      KeyName: !If [HasKeyPair, !Ref KeyPairName, !Ref "AWS::NoValue"]
       IamInstanceProfile: !Ref OpenClawInstanceProfile
       Tenancy: host
       HostId: !Ref MacDedicatedHost

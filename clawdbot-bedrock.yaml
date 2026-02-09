@@ -48,13 +48,14 @@ Parameters:
       - "c5.xlarge"
 
   KeyPairName:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: "EC2 key pair for emergency SSH access"
+    Type: String
+    Default: "none"
+    Description: "EC2 key pair for emergency SSH access (optional - set to 'none' to skip)"
 
   AllowedSSHCIDR:
     Type: String
-    Default: "0.0.0.0/0"
-    Description: "CIDR for SSH access (recommend SSM Session Manager, set to 127.0.0.1/32 to disable SSH)"
+    Default: ""
+    Description: "CIDR for SSH access (optional - leave empty for no inbound rules. SSM Session Manager is used for access. If SSH is needed, set to your IP/32 - find your IP at checkip.amazonaws.com)"
 
   CreateVPCEndpoints:
     Type: String
@@ -73,7 +74,10 @@ Parameters:
 
 Conditions:
   CreateEndpoints: !Equals [!Ref CreateVPCEndpoints, "true"]
-  AllowSSH: !Not [!Equals [!Ref AllowedSSHCIDR, "127.0.0.1/32"]]
+  HasKeyPair: !Not [!Equals [!Ref KeyPairName, "none"]]
+  AllowSSH: !And
+    - !Not [!Equals [!Ref AllowedSSHCIDR, ""]]
+    - !Not [!Equals [!Ref KeyPairName, "none"]]
   UseGraviton: !Or
     - !Equals [!Select [0, !Split ['.', !Ref InstanceType]], 't4g']
     - !Equals [!Select [0, !Split ['.', !Ref InstanceType]], 'c7g']
@@ -309,7 +313,7 @@ Resources:
         - !Sub '{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id}}'
         - !Sub '{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}}'
       InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyPairName
+      KeyName: !If [HasKeyPair, !Ref KeyPairName, !Ref "AWS::NoValue"]
       IamInstanceProfile: !Ref OpenClawInstanceProfile
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
